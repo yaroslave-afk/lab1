@@ -10,12 +10,12 @@
 
 | Поле | Значення |
 |---|---|
-| ПІБ | |
-| Група | |
-| Ідентифікатор (`sNN`) | |
-| Дата виконання | |
-| Середовище | <!-- GitHub Codespaces або інше; якщо інше, вказати яке --> |
-| Версія `dig` | <!-- перший рядок виводу команди dig -v у терміналі стенда --> |
+| ПІБ |Іванюша Ярослав |
+| Група |202 |
+| Ідентифікатор (`sNN`) |cs-202-09 |
+| Дата виконання |01.11.2026 |
+| Середовище |GitHub Codespaces |
+| Версія `dig` | DiG 9.18.39-0ubuntu0.24.04.8-Ubuntu |
 
 ## Параметри варіанта
 
@@ -23,14 +23,14 @@
 
 | Параметр | Значення |
 |---|---|
-| `$TTL`, с | |
-| TTL запису SOA, с | |
-| Поле `minimum` SOA, с | |
-| Псевдонім (CNAME на `www`) | |
-| Другий хост і його TTL, с | |
-| Пріоритет MX | |
-| Токен TXT | |
-| Ім'я для завдання 5 | |
+| `$TTL`, с |45 с |
+| TTL запису SOA, с |60 с |
+| Поле `minimum` SOA, с |40 с |
+| Псевдонім (CNAME на `www`) |files |
+| Другий хост і його TTL, с |canary, 25 c |
+| Пріоритет MX |40 |
+| Токен TXT |"lab-token=b664095a" |
+| Ім'я для завдання 5 |new-uungd.cs-202-09.lab |
 
 ## Завдання 1. Складові URI
 
@@ -40,23 +40,23 @@
 
 | № | scheme | userinfo | host | port | path | query | fragment |
 |---|---|---|---|---|---|---|---|
-| 1 | | | | | | | |
-| 2 | | | | | | | |
-| 3 | | | | | | | |
-| 4 | | | | | | | |
-| 5 | | | | | | | |
+| 1 |http |- |www.cs-202-09.lab |80 за замовч |/users/catalog |lang=5&from=x |comments |
+| 2 |http |- |files.cs-202-09.lab |80 (явно, = за замовч	 |/catalog/ |lang=%D0%BA%D0%B8%D1%97%D0%B2 |- |
+| 3 |http |user:pass |canary.cs-202-09.lab |80 за замовч |/users |- |summary |
+| 4 |http |- |www.cs-202-09.lab |4443 |/users/../catalog |- |- |
+| 5 |mailto |- |- |- |admin@cs-202-09.lab |subject=users |- |
 
 | № | Ім'я, що запитується в DNS | Заголовок `Host` | Ціль запиту (request target) |
 |---|---|---|---|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
+| 1 |www.cs-202-09.lab |www.cs-202-09.lab |/users/catalog?lang=5&from=x |
+| 2 |files.cs-202-09.lab |files.cs-202-09.lab |/catalog/?lang=%D0%BA%D0%B8%D1%97%D0%B2 |
+| 3 |canary.cs-202-09.lab |canary.cs-202-09.lab |/users |
+| 4 |www.cs-202-09.lab |www.cs-202-09.lab:4443 |/users/../catalog|
+| 5 |- |- |- |
 
-Декодоване значення параметра URI 2:
+Декодоване значення параметра URI 2:київ
 
-Чому URI 5 не має складової host, хоча містить символ `@`:
+Чому URI 5 не має складової host, хоча містить символ `@`:Схема mailto — non-hierarchical, у ній немає частини //authority, тому складові userinfo/host/port не виділяються. Символ @ це розділювач localpart@domain усередині самої схеми mailto тобто частина path, а не userinfo@host.
 
 ### 1.2. Перевірка (після завдання 3)
 
@@ -93,20 +93,35 @@ URI 4: етап, на якому запит не вдається (пошук і
 
 | Сервер | status | flags | ANSWER | AUTHORITY | ADDITIONAL |
 |---|---|---|---|---|---|
-| 10.53.0.2 | | | | | |
-| 10.53.0.3 | | | | | |
-| 10.53.1.1 | | | | | |
+| 10.53.0.2 |NOERROR |qr |	0 записів |lab. NS ns1.nic.lab. (TTL 172800) |ns1.nic.lab. A 10.53.0.3 (TTL 172800) |
+| 10.53.0.3 |NOERROR |qr |	0 записів |cs-202-09.lab. NS ns.cs-202-09.lab. (TTL 3600) |ns.cs-202-09.lab. A 10.53.1.1 (TTL 3600) |
+| 10.53.1.1 |NOERROR |	qr aa |ns.cs-202-09.lab. A 10.53.1.1 (TTL 45) | cs-202-09.lab. NS ns.cs-202-09.lab. (TTL 45)|0 записів (лише OPT) |
 
 Вивід `dig ns.sNN.lab A +trace`:
 
-```text
+```
+root@ns-cs-202-09:/# dig ns.cs-202-09.lab A +trace
 
+; <<>> DiG 9.18.39-0ubuntu0.24.04.8-Ubuntu <<>> ns.cs-202-09.lab A +trace
+;; global options: +cmd
+.                       85698   IN      NS      a.root-servers.net.
+;; Received 59 bytes from 10.53.0.53#53(10.53.0.53) in 1 ms
+
+lab.                    172800  IN      NS      ns1.nic.lab.
+;; Received 117 bytes from 10.53.0.2#53(a.root-servers.net) in 79 ms
+
+cs-202-09.lab.          3600    IN      NS      ns.cs-202-09.lab.
+;; Received 103 bytes from 10.53.0.3#53(ns1.nic.lab) in 40 ms
+
+ns.cs-202-09.lab.       45      IN      A       10.53.1.1
+cs-202-09.lab.          45      IN      NS      ns.cs-202-09.lab.
+;; Received 103 bytes from 10.53.1.1#53(ns.cs-202-09.lab) in 1 ms
 ```
 
 | Запит | TTL запису NS | Прапорець `aa` | Секція, у якій міститься NS |
 |---|---|---|---|
-| `dig @10.53.0.3 sNN.lab NS +norec` | | | |
-| `dig @10.53.1.1 sNN.lab NS +norec` | | | |
+| `dig @10.53.0.3 sNN.lab NS +norec` |3600 |	немає |	AUTHORITY |
+| `dig @10.53.1.1 sNN.lab NS +norec` |45 |qr aa |ANSWER |
 
 1. Які відповіді є відсиланнями і за якими ознаками це визначено?
 
@@ -118,7 +133,7 @@ URI 4: етап, на якому запит не вдається (пошук і
 
 Вивід `zone-reload`:
 
-```text
+``` 
 
 ```
 
