@@ -151,8 +151,69 @@ Userinfo перетворюється на Authorization. URI 3 має user:pass
 
 ## Завдання 2. Проходження ієрархії вручну
 
-```text
+```
+root@ns-cs-202-09:/# dig @10.53.0.2 ns.cs-202-09.lab A +norec
 
+; <<>> DiG 9.18.39-0ubuntu0.24.04.8-Ubuntu <<>> @10.53.0.2 ns.cs-202-09.lab A +norec
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 16037
+;; flags: qr; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 2
+
+;; QUESTION SECTION:
+;ns.cs-202-09.lab.              IN      A
+
+;; AUTHORITY SECTION:
+lab.                    172800  IN      NS      ns1.nic.lab.
+
+;; ADDITIONAL SECTION:
+ns1.nic.lab.            172800  IN      A       10.53.0.3
+
+;; Query time: 79 msec
+;; SERVER: 10.53.0.2#53(10.53.0.2) (UDP)
+
+root@ns-cs-202-09:/# dig @10.53.0.3 ns.cs-202-09.lab A +norec
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.8-Ubuntu <<>> @10.53.0.3 ns.cs-202-09.lab A +norec
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 22385
+;; flags: qr; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 2
+
+;; QUESTION SECTION:
+;ns.cs-202-09.lab.              IN      A
+
+;; AUTHORITY SECTION:
+cs-202-09.lab.          3600    IN      NS      ns.cs-202-09.lab.
+
+;; ADDITIONAL SECTION:
+ns.cs-202-09.lab.       3600    IN      A       10.53.1.1
+
+;; Query time: 79 msec
+;; SERVER: 10.53.0.3#53(10.53.0.3) (UDP)
+
+root@ns-cs-202-09:/# dig @10.53.1.1 ns.cs-202-09.lab A +norec
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.8-Ubuntu <<>> @10.53.1.1 ns.cs-202-09.lab A +norec
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 10679
+;; flags: qr aa; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 1
+
+;; QUESTION SECTION:
+;ns.cs-202-09.lab.              IN      A
+
+;; ANSWER SECTION:
+ns.cs-202-09.lab.       45      IN      A       10.53.1.1
+
+;; AUTHORITY SECTION:
+cs-202-09.lab.          45      IN      NS      ns.cs-202-09.lab.
+
+;; Query time: 0 msec
+;; SERVER: 10.53.1.1#53(10.53.1.1) (UDP)
 ```
 
 | Сервер | status | flags | ANSWER | AUTHORITY | ADDITIONAL |
@@ -226,8 +287,95 @@ zone reload queued
 
 Порівняння відповідей резолвера та власного сервера:
 
-```text
+```
 
+root@ns-cs-202-09:/# dig files.cs-202-09.lab A
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.8-Ubuntu <<>> files.cs-202-09.lab A
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 35092
+;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
+
+;; QUESTION SECTION:
+;files.cs-202-09.lab.           IN      A
+
+;; ANSWER SECTION:
+files.cs-202-09.lab.    45      IN      CNAME   www.cs-202-09.lab.
+www.cs-202-09.lab.      45      IN      A       10.53.0.80
+
+;; Query time: 122 msec
+;; SERVER: 10.53.0.53#53(10.53.0.53) (UDP)
+
+
+root@ns-cs-202-09:/# dig @10.53.1.1 files.cs-202-09.lab A +norec
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.8-Ubuntu <<>> @10.53.1.1 files.cs-202-09.lab A +norec
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 51557
+;; flags: qr aa; QUERY: 1, ANSWER: 2, AUTHORITY: 1, ADDITIONAL: 2
+
+;; QUESTION SECTION:
+;files.cs-202-09.lab.           IN      A
+
+;; ANSWER SECTION:
+files.cs-202-09.lab.    45      IN      CNAME   www.cs-202-09.lab.
+www.cs-202-09.lab.      45      IN      A       10.53.0.80
+
+;; AUTHORITY SECTION:
+cs-202-09.lab.          45      IN      NS      ns.cs-202-09.lab.
+
+;; ADDITIONAL SECTION:
+ns.cs-202-09.lab.       45      IN      A       10.53.1.1
+
+;; Query time: 0 msec
+;; SERVER: 10.53.1.1#53(10.53.1.1) (UDP)
+
+
+root@ns-cs-202-09:/# dig cs-202-09.lab MX
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.8-Ubuntu <<>> cs-202-09.lab MX
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 35286
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; QUESTION SECTION:
+;cs-202-09.lab.                 IN      MX
+
+;; ANSWER SECTION:
+cs-202-09.lab.          45      IN      MX      40 mail.cs-202-09.lab.
+
+;; Query time: 0 msec
+;; SERVER: 10.53.0.53#53(10.53.0.53) (UDP)
+
+
+root@ns-cs-202-09:/# dig @10.53.1.1 cs-202-09.lab MX +norec
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.8-Ubuntu <<>> @10.53.1.1 cs-202-09.lab MX +norec
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 3621
+;; flags: qr aa; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 3
+
+;; QUESTION SECTION:
+;cs-202-09.lab.                 IN      MX
+
+;; ANSWER SECTION:
+cs-202-09.lab.          45      IN      MX      40 mail.cs-202-09.lab.
+
+;; AUTHORITY SECTION:
+cs-202-09.lab.          45      IN      NS      ns.cs-202-09.lab.
+
+;; ADDITIONAL SECTION:
+mail.cs-202-09.lab.     45      IN      A       10.53.0.80
+ns.cs-202-09.lab.       45      IN      A       10.53.1.1
+
+;; Query time: 0 msec
+;; SERVER: 10.53.1.1#53(10.53.1.1) (UDP)
 ```
 
 | Запит | flags | ANSWER (кількість, типи) | AUTHORITY (кількість, типи) | ADDITIONAL (кількість, типи) | TTL |
